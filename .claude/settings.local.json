@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx shadcn@latest init -y -b neutral)",
+      "Bash(npx shadcn@latest init --help)",
+      "Bash(npx shadcn@latest init -y -b radix --no-monorepo)",
+      "Bash(npm install *)"
+    ]
+  }
+}
