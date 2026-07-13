@@ -12,7 +12,7 @@ Select an agent in the left column and the wires show which knowledge it "reads"
 npx @nnquangit/agent-hub
 ```
 
-By default it uses `.agents/context` (knowledge) and `.agents/agents` (agents) in the current directory. To customize:
+By default it uses `.agents/context` (knowledge) and `.agents/agents` (agents) in the current directory. **If the context folder is empty or missing, example knowledge files and a sample agent are created on first run** so you can explore right away. To customize:
 
 ```bash
 npx @nnquangit/agent-hub --contextDir=docs/knowledge --agentDir=docs/agents -p 3999
