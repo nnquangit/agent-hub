@@ -1,5 +1,9 @@
 # Agent Hub
 
+[![npm version](https://img.shields.io/npm/v/%40nnquangit%2Fagent-hub)](https://www.npmjs.com/package/@nnquangit/agent-hub)
+[![npm downloads](https://img.shields.io/npm/dm/%40nnquangit%2Fagent-hub)](https://www.npmjs.com/package/@nnquangit/agent-hub)
+[![license](https://img.shields.io/npm/l/%40nnquangit%2Fagent-hub)](https://github.com/nnquangit/agent-hub/blob/main/LICENSE)
+
 A UI for managing **agents + markdown knowledge**. It scans a directory of `.md` files (knowledge), lets you create agents, write system prompts, and tick-assign knowledge to each agent — every agent is written straight to disk as an `agent.[slug].md` file. No database.
 
 ![Main screen](https://raw.githubusercontent.com/nnquangit/agent-hub/main/docs/main.png)
