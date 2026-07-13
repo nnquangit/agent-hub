@@ -101,6 +101,24 @@ You are MyApp's senior coder.
 
 Knowledge links are computed **relative from agentDir to contextDir**, so they are clickable in any editor.
 
+## Claude Code skills
+
+This repo is also a Claude Code plugin marketplace shipping two skills ([skills/](skills)):
+
+- **agent-hub-export** — exports a project's scattered docs, rules and notes into the agent-hub format. Every exported file carries a `> Source:` provenance line telling agents not to load the originals (no duplicate context).
+- **agent-hub-update** — re-scans the sources later and syncs the export: updates stale files, adds new ones, flags knowledge whose sources disappeared, never touches hand-written notes.
+
+Install in Claude Code:
+
+```
+/plugin marketplace add nnquangit/agent-hub
+/plugin install agent-hub-skills@agent-hub
+```
+
+(or manually: `cp -R skills/* ~/.claude/skills/`)
+
+Then in any project, ask Claude: *"organize this project's docs into agent-hub format"* — it builds the `.agents/context` tree, wires up agents, verifies every link, and tells you to run `npx @nnquangit/agent-hub`. Later: *"docs changed, sync the agent-hub knowledge base"*.
+
 ## Development
 
 ```bash
