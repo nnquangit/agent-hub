@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * CLI: npx @agent-hub/cli --contextDir=.agents/context --agentDir=.agents/agents [-p 4321]
+ * CLI: npx @nnquangit/agent-hub --contextDir=.agents/context --agentDir=.agents/agents [-p 4321]
  * Relative paths are resolved against the current working directory.
  */
 const path = require("path");
@@ -10,7 +10,7 @@ const http = require("http");
 const HELP = `agent-hub — UI for managing agents + markdown knowledge
 
 Usage:
-  npx @agent-hub/cli [options]
+  npx @nnquangit/agent-hub [options]
 
 Options:
   --contextDir <dir>   Knowledge md directory      (default: .agents/context)
@@ -24,8 +24,8 @@ contextDir layout (2 levels): scope/knowledge/file.md
   (files directly inside a scope show up under a "General" group)
 
 Examples:
-  npx @agent-hub/cli
-  npx @agent-hub/cli --contextDir=docs/knowledge --agentDir=docs/agents -p 3999
+  npx @nnquangit/agent-hub
+  npx @nnquangit/agent-hub --contextDir=docs/knowledge --agentDir=docs/agents -p 3999
 `;
 
 function fail(msg) {

@@ -1,7 +1,16 @@
 {
-  "name": "@agent-hub/cli",
+  "name": "@nnquangit/agent-hub",
   "version": "1.0.0",
-  "description": "UI quản lý agent + knowledge dạng file markdown (.md)",
+  "description": "UI for managing agents + markdown knowledge files",
+  "license": "MIT",
+  "homepage": "https://github.com/nnquangit/agent-hub#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nnquangit/agent-hub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nnquangit/agent-hub/issues"
+  },
   "bin": {
     "agent-hub": "./bin/agent-hub.js"
   },
