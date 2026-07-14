@@ -22,13 +22,13 @@ By default it uses `.agents/context` (knowledge) and `.agents/agents` (agents) i
 npx @nnquangit/agent-hub --contextDir=docs/knowledge --agentDir=docs/agents -p 3999
 ```
 
-| Option | Default | Description |
-|---|---|---|
-| `--contextDir <dir>` | `.agents/context` | Directory containing knowledge md files |
-| `--agentDir <dir>` | `.agents/agents` | Directory where `agent.[slug].md` files are written |
-| `-p, --port <port>` | `4321` (or env `PORT`) | Server port |
-| `--host <host>` | `localhost` | Hostname |
-| `-h, --help` | | Show help |
+| Option               | Default                | Description                                         |
+| -------------------- | ---------------------- | --------------------------------------------------- |
+| `--contextDir <dir>` | `.agents/context`      | Directory containing knowledge md files             |
+| `--agentDir <dir>`   | `.agents/agents`       | Directory where `agent.[slug].md` files are written |
+| `-p, --port <port>`  | `4321` (or env `PORT`) | Server port                                         |
+| `--host <host>`      | `localhost`            | Hostname                                            |
+| `-h, --help`         |                        | Show help                                           |
 
 ## Features
 
@@ -96,6 +96,7 @@ updated: 2026-07-13
 ## System prompt
 
 You are MyApp's senior coder.
+
 - Read every assigned knowledge file before writing code
 ```
 
@@ -103,22 +104,81 @@ Knowledge links are computed **relative from agentDir to contextDir**, so they a
 
 ## Claude Code skills
 
-This repo is also a Claude Code plugin marketplace shipping three skills ([skills/](skills)):
+This repo is also a Claude Code plugin marketplace shipping three skills ([skills/](skills)).
 
-- **agent-hub-export** — exports a project's scattered docs, rules and notes into the agent-hub format. Every exported file carries a `> Source:` provenance line telling agents not to load the originals (no duplicate context).
-- **agent-hub-update** — re-scans the sources later and syncs the export: updates stale files, adds new ones, flags knowledge whose sources disappeared, never touches hand-written notes.
-- **agent-hub-mapping** — generates an `AGENTS.md` routing file mapping role keys to agent files (`admin.dev` → `.agents/agents/agent.admin.dev.md`) with loading rules, so any coding agent picks the right instructions per task.
+### Install from GitHub
 
-Install in Claude Code:
+Inside Claude Code, add this repo as a marketplace and install the plugin:
 
 ```
 /plugin marketplace add nnquangit/agent-hub
 /plugin install agent-hub-skills@agent-hub
 ```
 
-(or manually: `cp -R skills/* ~/.claude/skills/`)
+Or install manually without the plugin system:
 
-Then in any project, ask Claude: *"organize this project's docs into agent-hub format"* — it builds the `.agents/context` tree, wires up agents, verifies every link, and tells you to run `npx @nnquangit/agent-hub`. Later: *"docs changed, sync the agent-hub knowledge base"*.
+```bash
+git clone https://github.com/nnquangit/agent-hub.git
+cp -R agent-hub/skills/* ~/.claude/skills/
+```
+
+Restart the Claude Code session and the skills are available in every project.
+
+### agent-hub-mapping ⭐
+
+The important one: it wires your agents into the project's `AGENTS.md` so any coding
+agent routes tasks to the right instruction file. In any project with `.agents/agents/`,
+ask Claude:
+
+> Update AGENTS.md mapping
+
+It scans `agent.<role>.md` files and appends this block to `AGENTS.md` (append-only —
+your existing content is never touched, re-runs only regenerate the block):
+
+```markdown
+<!-- agent-hub:mapping:start -->
+
+# AI Agent Instructions
+
+Role instruction files:
+
+- `admin.dev` → `.agents/agents/agent.admin.dev.md`
+- `api.dev` → `.agents/agents/agent.api.dev.md`
+- `db` → `.agents/agents/agent.db.md`
+- `reviewer` → `.agents/agents/agent.reviewer.md`
+- `web.dev` → `.agents/agents/agent.web.dev.md`
+
+## Loading Rules
+
+Before starting any task:
+
+1. Determine which role(s) are required for the task.
+2. Locate the corresponding agent instruction file by matching the **role** value.
+3. Read the matched agent instruction file completely before planning or writing code.
+4. The agent instruction file contains additional knowledge files that must also be read before performing the task.
+5. If the task spans multiple roles, load every matching agent instruction file.
+6. Do not load instruction files for unrelated roles.
+7. If instructions conflict, the most specific role instruction takes precedence.
+<!-- agent-hub:mapping:end -->
+```
+
+Role keys are the agents' `role` values verbatim (`role: admin.dev` ↔
+`agent.admin.dev.md` → key `admin.dev`). After that, a prompt like _"(role db) add a
+migration for orders"_ makes the agent load `agent.db.md` — and through it, all the
+knowledge files assigned to that agent in the agent-hub UI.
+
+### agent-hub-export
+
+Bootstraps the knowledge base: exports a project's scattered docs, rules and notes
+(README, docs/, CLAUDE.md, cursor rules...) into `.agents/context` + starter agents.
+Each exported file carries a `> Source:` provenance line so agents don't also load the
+originals. Ask: _"organize this project's docs into agent-hub format"_.
+
+### agent-hub-update
+
+Keeps the export in sync: re-scans sources, updates stale files, adds new ones, flags
+knowledge whose sources disappeared — never touches hand-written notes or your agents'
+assignments. Ask: _"docs changed, sync the agent-hub knowledge base"_.
 
 ## Development
 
