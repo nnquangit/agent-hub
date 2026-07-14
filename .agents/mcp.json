@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "desktop-commander": {
-      "command": "npx",
-      "args": ["-y", "@anthropic/desktop-commander"]
-    }
-  }
-}
