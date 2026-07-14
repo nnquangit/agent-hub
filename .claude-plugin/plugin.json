@@ -1,7 +1,7 @@
 {
   "name": "agent-hub-skills",
-  "description": "Claude Code skills to export a project's docs/rules into an agent-hub knowledge base (agent-hub-export) and keep it in sync (agent-hub-update)",
-  "version": "1.0.0",
+  "description": "Claude Code skills for agent-hub: export project docs/rules into a knowledge base (agent-hub-export), keep it in sync (agent-hub-update), and map agents into AGENTS.md routing (agent-hub-mapping)",
+  "version": "1.1.0",
   "author": {
     "name": "Quang Ngo"
   }

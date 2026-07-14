@@ -4,7 +4,25 @@
       "Bash(npx shadcn@latest init -y -b neutral)",
       "Bash(npx shadcn@latest init --help)",
       "Bash(npx shadcn@latest init -y -b radix --no-monorepo)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(rm -rf /private/tmp/claude-501/-Users-nnquangit-projects-private-agent-hub/fa9d457f-25ec-43d1-a7e1-9682735de33d/scratchpad/maptest-e2e)",
+      "Bash(mkdir -p /private/tmp/claude-501/-Users-nnquangit-projects-private-agent-hub/fa9d457f-25ec-43d1-a7e1-9682735de33d/scratchpad/maptest-e2e)",
+      "Bash(cp -R /Users/nnquangit/projects/private/agent-hub/.agents /private/tmp/claude-501/-Users-nnquangit-projects-private-agent-hub/fa9d457f-25ec-43d1-a7e1-9682735de33d/scratchpad/maptest-e2e/)",
+      "Bash(node /Users/nnquangit/.claude/skills/agent-hub-mapping/scripts/generate.js .agents/agents --write AGENTS.md)",
+      "Bash(cp -R /Users/nnquangit/.claude/skills/agent-hub-mapping skills/)",
+      "Bash(python3 -)",
+      "Bash(claude plugin *)",
+      "Bash(grep -rn -- '-dev\\\\|collapsed to\\\\|dashes' /Users/nnquangit/.claude/skills/agent-hub-export /Users/nnquangit/.claude/skills/agent-hub-update /Users/nnquangit/.claude/skills/agent-hub-mapping /Users/nnquangit/projects/private/agent-hub/README.md 2>/dev/null | grep -v Binary)",
+      "Bash(cp -R /Users/nnquangit/.claude/skills/agent-hub-export skills/)",
+      "Read(//Users/nnquangit/.claude/skills/agent-hub-mapping/**)",
+      "Bash(node -e ' *)",
+      "Bash(npx next *)",
+      "Bash(npm run *)",
+      "Bash(lsof -tiTCP:4601 -sTCP:LISTEN)",
+      "Bash(xargs kill)",
+      "Bash(rm -rf * .agents)",
+      "Bash(node /Users/nnquangit/projects/private/agent-hub/bin/agent-hub.js -p 4602)",
+      "Bash(echo \"started pid $!\")"
     ]
   }
 }

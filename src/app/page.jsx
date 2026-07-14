@@ -39,17 +39,17 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
+// The slug is whatever the user typed as the name — no forced separator or casing.
+// Only strip characters that are unsafe in filenames (mirror of store.js slugify).
 function slugify(name) {
   return (
     String(name)
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/đ/g, "d")
-      .replace(/Đ/g, "D")
-      .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "agent"
+      .replace(/[/\\:*?"<>|\n\r]+/g, "")
+      .replace(/\s+/g, " ")
+      .replace(/\.{2,}/g, ".")
+      .replace(/^\.+|\.+$/g, "")
+      .trim() || "agent"
   );
 }
 

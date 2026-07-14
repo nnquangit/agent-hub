@@ -15,17 +15,17 @@ const toPosix = (p) => p.split(path.sep).join("/");
 /** Relative link prefix from AGENTS_DIR to CONTEXT_DIR, used inside agent md files */
 export const LINK_PREFIX = toPosix(path.relative(AGENTS_DIR, CONTEXT_DIR)) || ".";
 
+// The slug is whatever the user typed as the name — no forced separator or casing.
+// Only strip characters that are unsafe in filenames or could escape the agents dir.
 export function slugify(name) {
   return (
     String(name)
-      .normalize("NFD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/đ/g, "d")
-      .replace(/Đ/g, "D")
-      .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "agent"
+      .replace(/[/\\:*?"<>|\n\r]+/g, "")
+      .replace(/\s+/g, " ")
+      .replace(/\.{2,}/g, ".")
+      .replace(/^\.+|\.+$/g, "")
+      .trim() || "agent"
   );
 }
 

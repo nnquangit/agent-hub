@@ -103,10 +103,11 @@ Knowledge links are computed **relative from agentDir to contextDir**, so they a
 
 ## Claude Code skills
 
-This repo is also a Claude Code plugin marketplace shipping two skills ([skills/](skills)):
+This repo is also a Claude Code plugin marketplace shipping three skills ([skills/](skills)):
 
 - **agent-hub-export** — exports a project's scattered docs, rules and notes into the agent-hub format. Every exported file carries a `> Source:` provenance line telling agents not to load the originals (no duplicate context).
 - **agent-hub-update** — re-scans the sources later and syncs the export: updates stale files, adds new ones, flags knowledge whose sources disappeared, never touches hand-written notes.
+- **agent-hub-mapping** — generates an `AGENTS.md` routing file mapping role keys to agent files (`admin.dev` → `.agents/agents/agent.admin.dev.md`) with loading rules, so any coding agent picks the right instructions per task.
 
 Install in Claude Code:
 

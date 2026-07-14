@@ -108,8 +108,10 @@ You are this project's senior coder.
 
 Rules that matter:
 
-- **slug** = name lowercased, diacritics stripped, non-alphanumerics collapsed to `-`
-  (`"Backend Dev"` → `agent.backend-dev.md`).
+- **slug**: agent-hub keeps whatever the user types as the name (it doubles as the
+  role key). When THIS skill invents agent names, default to lowercase dot-separated
+  slugs (`"Backend Dev"` → `backend.dev` → `agent.backend.dev.md`) — but if the user
+  names the agents, use their naming verbatim.
 - **Link label = the path relative to the context dir, verbatim.** agent-hub reads
   knowledge from labels, so a wrong label silently breaks the assignment.
 - **Link href = `<prefix>/<label>`** where prefix is the relative path from the agents
