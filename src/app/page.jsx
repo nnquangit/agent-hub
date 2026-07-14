@@ -218,9 +218,10 @@ export default function Home() {
       return;
     }
     const editing = agentForm?.mode === "edit" ? agentForm.agent : null;
-    const slug = slugify(name);
+    // role is the routing key and names the file (falls back to display name)
+    const slug = slugify(fRole.trim() || name);
     if (agents.some((a) => a.slug === slug && a.slug !== editing?.slug)) {
-      toast.error(`Agent "${name}" already exists`);
+      toast.error(`Agent "${slug}" already exists`);
       return;
     }
     setSaving(true);
@@ -699,7 +700,7 @@ export default function Home() {
                   <Label htmlFor="agent-role">Role</Label>
                   <Input
                     id="agent-role"
-                    placeholder="e.g. Senior coder"
+                    placeholder="routing key, e.g. coder, admin.dev — names the file"
                     value={fRole}
                     onChange={(e) => setFRole(e.target.value)}
                   />
@@ -718,7 +719,7 @@ export default function Home() {
                   <Label className="text-muted-foreground">
                     Preview{" "}
                     <code className="font-mono">
-                      agent.{slugify(fName || "agent")}.md
+                      agent.{slugify(fRole || fName || "agent")}.md
                     </code>
                   </Label>
                   <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-3 font-mono text-xs leading-relaxed text-muted-foreground">

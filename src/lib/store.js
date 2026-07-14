@@ -209,7 +209,9 @@ export function saveAgent({ name, role, knowledge, systemPrompt, oldSlug }) {
   }
 
   fs.mkdirSync(AGENTS_DIR, { recursive: true });
-  const slug = slugify(name);
+  // the role is the routing key and names the file: role "coder" → agent.coder.md
+  // (falls back to the display name when role is empty)
+  const slug = slugify(role || name);
   if (oldSlug && oldSlug !== slug) {
     // oldSlug is the verbatim slug from the file name (possibly hand-written)
     const old = path.join(AGENTS_DIR, `agent.${assertSafeSlug(oldSlug)}.md`);

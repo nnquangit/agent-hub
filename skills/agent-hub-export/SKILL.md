@@ -81,19 +81,19 @@ a file as hand-written, which tells `agent-hub-update` to leave it alone.
 
 ## 3. Write the agent files
 
-Each agent is `agent.<slug>.md` inside the agents dir. The format is strict because
+Each agent is `agent.<role>.md` inside the agents dir. The format is strict because
 agent-hub parses it:
 
 ```markdown
 ---
 name: Coder
-role: Senior coder
+role: coder
 updated: 2026-07-13
 ---
 
 # Agent: Coder
 
-**Role:** Senior coder
+**Role:** coder
 
 ## Knowledge — load these files before starting
 
@@ -108,10 +108,13 @@ You are this project's senior coder.
 
 Rules that matter:
 
-- **slug**: agent-hub keeps whatever the user types as the name (it doubles as the
-  role key). When THIS skill invents agent names, default to lowercase dot-separated
-  slugs (`"Backend Dev"` → `backend.dev` → `agent.backend.dev.md`) — but if the user
-  names the agents, use their naming verbatim.
+- **`role` is the routing key AND names the file** — they must always match:
+  `role: coder` ↔ `agent.coder.md`, `role: backend.dev` ↔ `agent.backend.dev.md`.
+  AGENTS.md routing (the agent-hub-mapping skill) matches tasks by this role value,
+  so a role that differs from the filename silently breaks routing. `name` is just
+  the display label ("Coder", "Backend Dev").
+- When THIS skill invents role keys, default to lowercase dot-separated
+  (`backend.dev`, `qa`); if the user names roles, use their naming verbatim.
 - **Link label = the path relative to the context dir, verbatim.** agent-hub reads
   knowledge from labels, so a wrong label silently breaks the assignment.
 - **Link href = `<prefix>/<label>`** where prefix is the relative path from the agents

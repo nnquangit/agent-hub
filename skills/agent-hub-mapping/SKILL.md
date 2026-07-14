@@ -29,9 +29,10 @@ node <skill-dir>/scripts/generate.js .agents/agents --write AGENTS.md
 Rules the script applies (keep these if you ever have to hand-edit):
 
 - One entry per `agent.<slug>.md`, sorted by role key.
-- **Role key = the slug verbatim** — the slug is whatever the user named the agent
-  (`agent.admin.dev.md` → `admin.dev`, `agent.db.md` → `db`, `agent.qa-lead.md` →
-  `qa-lead`). No separator conversion: the user's naming is the routing key.
+- **Role key = the slug verbatim** — agent-hub names the file from the agent's
+  `role:` field, so filename slug and role are the same value
+  (`role: admin.dev` ↔ `agent.admin.dev.md` → key `admin.dev`; `agent.qa-lead.md` →
+  `qa-lead`). No separator conversion: the user's role naming is the routing key.
 - Paths are project-root-relative.
 
 ## 2. Output format (exact)

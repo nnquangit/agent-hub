@@ -99,13 +99,13 @@ function scaffoldExamples(contextDir, agentDir) {
     const date = new Date().toISOString().slice(0, 10);
     const agentMd = `---
 name: Example
-role: Sample agent
+role: example
 updated: ${date}
 ---
 
 # Agent: Example
 
-**Role:** Sample agent
+**Role:** example
 
 ## Knowledge — load these files before starting
 
