@@ -1,5 +1,5 @@
 ---
-name: agent-hub-export
+name: agent-hub-scan
 description: >
   Export and organize a project's scattered knowledge — READMEs, docs/, coding rules,
   CLAUDE.md, cursor rules, contributor guides, architecture notes, skills/checklists —
@@ -110,7 +110,7 @@ Rules that matter:
 
 - **`role` is the routing key AND names the file** — they must always match:
   `role: coder` ↔ `agent.coder.md`, `role: backend.dev` ↔ `agent.backend.dev.md`.
-  AGENTS.md routing (the agent-hub-mapping skill) matches tasks by this role value,
+  AGENTS.md routing (the "Sync agents → AGENTS.md" button in the agent-hub UI) matches tasks by this role value,
   so a role that differs from the filename silently breaks routing. `name` is just
   the display label ("Coder", "Backend Dev").
 - When THIS skill invents role keys, default to lowercase dot-separated

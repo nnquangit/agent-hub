@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import {
   FileTextIcon,
   FolderIcon,
+  FolderSyncIcon,
   Loader2Icon,
   PencilIcon,
   PlusIcon,
@@ -27,6 +28,11 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -82,6 +88,11 @@ export default function Home() {
   const [fileView, setFileView] = useState(null);
   const [fileContent, setFileContent] = useState(null); // null = loading
 
+  // sync popover
+  const [syncTargets, setSyncTargets] = useState([]);
+  const [syncOpen, setSyncOpen] = useState(false);
+  const [syncing, setSyncing] = useState(null); // target id while running
+
   const mainRef = useRef(null);
   const saveTimer = useRef(null);
 
@@ -98,18 +109,47 @@ export default function Home() {
 
   const loadAll = useCallback(async () => {
     try {
-      const [c, k, a] = await Promise.all([
+      const [c, k, a, s] = await Promise.all([
         getJson("/api/config"),
         getJson("/api/knowledge"),
         getJson("/api/agents"),
+        getJson("/api/sync"),
       ]);
       setCfg(c);
       setKnowledge(k);
       setAgents(a);
+      setSyncTargets(s);
     } catch (e) {
       toast.error(e.message || "Failed to load data");
     }
   }, []);
+
+  const doSync = async (t) => {
+    setSyncing(t.id);
+    try {
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: t.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Sync failed");
+      const parts = [];
+      if (data.written?.length) parts.push(`${data.written.length} written`);
+      if (data.removed?.length) parts.push(`${data.removed.length} removed`);
+      if (data.skipped?.length) parts.push(`${data.skipped.length} skipped (not ours)`);
+      toast.success(
+        `${t.label}: ${parts.join(", ") || "already up to date"}${
+          data.out ? ` → ${data.out}` : ""
+        }`
+      );
+      setSyncOpen(false);
+    } catch (e) {
+      toast.error(e.message);
+    } finally {
+      setSyncing(null);
+    }
+  };
 
   useEffect(() => {
     loadAll();
@@ -501,6 +541,45 @@ export default function Home() {
               ))}
             </div>
           </ScrollArea>
+          <div className="border-t p-2">
+            <Popover open={syncOpen} onOpenChange={setSyncOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={agents.length === 0}
+                >
+                  <FolderSyncIcon data-icon="inline-start" />
+                  Sync agents
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent side="top" align="start" className="w-80 p-1">
+                {syncTargets.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => doSync(t)}
+                    disabled={!!syncing}
+                    className="flex w-full items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-accent disabled:opacity-50"
+                  >
+                    {syncing === t.id ? (
+                      <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin text-muted-foreground" />
+                    ) : (
+                      <FolderSyncIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                    )}
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">
+                        {t.label}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {t.desc}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </PopoverContent>
+            </Popover>
+          </div>
         </Card>
 
         {/* ===== Column 2: Topics ===== */}
