@@ -8,10 +8,11 @@ export function agentToMd(a, contextPrefix = "../context") {
     ? a.knowledge.map((k) => `- [${k}](${contextPrefix}/${k})`).join("\n")
     : "_(no knowledge assigned)_";
   const sys = String(a.systemPrompt || "").trim();
+  const model = String(a.model || "").trim();
   return `---
 name: ${a.name}
 role: ${a.role}
-updated: ${date}
+${model ? `model: ${model}\n` : ""}updated: ${date}
 ---
 
 # Agent: ${a.name}

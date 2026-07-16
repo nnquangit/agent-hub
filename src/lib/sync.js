@@ -131,7 +131,7 @@ function syncClaudeCode() {
     return `---
 name: ${fname}
 description: ${JSON.stringify(desc)}
----
+${a.model ? `model: ${a.model}\n` : ""}---
 ${marker(a.slug)}
 
 ${agentPrompt(a, "the Read tool")}`;
@@ -146,7 +146,7 @@ function syncOpenCode() {
     return `---
 description: ${JSON.stringify(desc)}
 mode: subagent
----
+${a.model ? `model: ${a.model}\n` : ""}---
 ${marker(a.slug)}
 
 ${agentPrompt(a, "your file-reading tool")}`;

@@ -179,6 +179,7 @@ function parseAgentFile(file) {
     file: path.relative(ROOT, file),
     name,
     role: get("role"),
+    model: get("model"),
     knowledge,
     systemPrompt,
   };
@@ -193,10 +194,11 @@ export function listAgents() {
     .map((f) => parseAgentFile(path.join(AGENTS_DIR, f)));
 }
 
-export function saveAgent({ name, role, knowledge, systemPrompt, oldSlug }) {
-  // name/role live on single frontmatter lines — strip newlines to keep the format intact
+export function saveAgent({ name, role, model, knowledge, systemPrompt, oldSlug }) {
+  // name/role/model live on single frontmatter lines — strip newlines to keep the format intact
   name = String(name || "").replace(/\s+/g, " ").trim();
   role = String(role || "").replace(/\s+/g, " ").trim();
+  model = String(model || "").replace(/\s+/g, " ").trim();
   systemPrompt = String(systemPrompt || "").trim();
   if (!name) throw new Error("Agent name required");
 
@@ -220,7 +222,7 @@ export function saveAgent({ name, role, knowledge, systemPrompt, oldSlug }) {
   const file = path.join(AGENTS_DIR, `agent.${slug}.md`);
   fs.writeFileSync(
     file,
-    agentToMd({ name, role, knowledge, systemPrompt }, LINK_PREFIX),
+    agentToMd({ name, role, model, knowledge, systemPrompt }, LINK_PREFIX),
     "utf8"
   );
   return parseAgentFile(file);

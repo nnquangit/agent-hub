@@ -82,6 +82,7 @@ export default function Home() {
   const [agentForm, setAgentForm] = useState(null);
   const [fName, setFName] = useState("");
   const [fRole, setFRole] = useState("");
+  const [fModel, setFModel] = useState("");
   const [fSys, setFSys] = useState("");
 
   // md file drawer: null | { name, path }
@@ -206,6 +207,7 @@ export default function Home() {
         body: JSON.stringify({
           name: agent.name,
           role: agent.role,
+          model: agent.model,
           knowledge: agent.knowledge,
           systemPrompt: agent.systemPrompt,
           oldSlug: agent.oldSlug || agent.slug,
@@ -238,6 +240,7 @@ export default function Home() {
   const openCreate = () => {
     setFName("");
     setFRole("");
+    setFModel("");
     setFSys("");
     setAgentForm({ mode: "create" });
   };
@@ -246,6 +249,7 @@ export default function Home() {
     e.stopPropagation();
     setFName(agent.name);
     setFRole(agent.role || "");
+    setFModel(agent.model || "");
     setFSys(agent.systemPrompt || "");
     setAgentForm({ mode: "edit", agent });
   };
@@ -272,6 +276,7 @@ export default function Home() {
         body: JSON.stringify({
           name,
           role: fRole.trim(),
+          model: fModel.trim(),
           knowledge: editing ? editing.knowledge : [],
           systemPrompt: fSys,
           oldSlug: editing?.slug,
@@ -785,6 +790,15 @@ export default function Home() {
                   />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="agent-model">Model</Label>
+                  <Input
+                    id="agent-model"
+                    placeholder="e.g. claude-sonnet-5, gpt-4o (optional)"
+                    value={fModel}
+                    onChange={(e) => setFModel(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="agent-sys">System prompt</Label>
                   <Textarea
                     id="agent-sys"
@@ -806,6 +820,7 @@ export default function Home() {
                       {
                         name: fName.trim() || "…",
                         role: fRole.trim(),
+                        model: fModel.trim(),
                         knowledge:
                           agentForm?.mode === "edit"
                             ? agentForm.agent.knowledge
