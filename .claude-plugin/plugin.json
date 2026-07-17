@@ -1,6 +1,6 @@
 {
   "name": "agent-hub-skills",
-  "description": "Claude Code skills for agent-hub: scan a project's docs/rules into a knowledge base (agent-hub-scan) and keep it in sync (agent-hub-update). Syncing agents to AGENTS.md/Claude Code/OpenCode is built into the agent-hub app itself.",
+  "description": "Claude Code skills for agent-hub: scan a project's docs/rules into a knowledge base (agent-hub-generate) and keep it in sync (agent-hub-update). Syncing agents to AGENTS.md/Claude Code/OpenCode is built into the agent-hub app itself.",
   "version": "1.2.0",
   "author": {
     "name": "Quang Ngo"

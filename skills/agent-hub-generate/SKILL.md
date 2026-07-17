@@ -1,5 +1,5 @@
 ---
-name: agent-hub-scan
+name: agent-hub-generate
 description: >
   Export and organize a project's scattered knowledge — READMEs, docs/, coding rules,
   CLAUDE.md, cursor rules, contributor guides, architecture notes, skills/checklists —

@@ -550,7 +550,6 @@ export default function Home() {
             <Popover open={syncOpen} onOpenChange={setSyncOpen}>
               <PopoverTrigger asChild>
                 <Button
-                  variant="outline"
                   size="sm"
                   className="w-full"
                   disabled={agents.length === 0}
@@ -559,24 +558,28 @@ export default function Home() {
                   Sync agents
                 </Button>
               </PopoverTrigger>
-              <PopoverContent side="top" align="start" className="w-80 p-1">
+              <PopoverContent
+                side="top"
+                align="start"
+                className="w-80 border-neutral-200 bg-white p-1 text-neutral-900"
+              >
                 {syncTargets.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => doSync(t)}
                     disabled={!!syncing}
-                    className="flex w-full items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-accent disabled:opacity-50"
+                    className="flex w-full items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors hover:bg-neutral-100 disabled:opacity-50"
                   >
                     {syncing === t.id ? (
-                      <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin text-muted-foreground" />
+                      <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin text-neutral-500" />
                     ) : (
-                      <FolderSyncIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <FolderSyncIcon className="mt-0.5 size-4 shrink-0 text-neutral-500" />
                     )}
                     <span className="min-w-0">
                       <span className="block text-sm font-medium">
                         {t.label}
                       </span>
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="block text-xs text-neutral-500">
                         {t.desc}
                       </span>
                     </span>

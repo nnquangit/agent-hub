@@ -7,13 +7,13 @@ description: >
   all viewable with `npx @nnquangit/agent-hub`. Use this whenever the user says the
   docs/rules changed and the agent-hub knowledge base needs refreshing, asks to
   update/sync/refresh `.agents`, or complains that exported knowledge is out of date.
-  For a first-time export (no `.agents/context` yet), use the agent-hub-scan skill
+  For a first-time export (no `.agents/context` yet), use the agent-hub-generate skill
   instead.
 ---
 
 # Update an existing agent-hub export
 
-An agent-hub export (created by the `agent-hub-scan` skill) is a copy of the
+An agent-hub export (created by the `agent-hub-generate` skill) is a copy of the
 project's docs/rules, so it drifts as sources change. Your job: bring the export back
 in sync **without destroying anything a human added by hand**.
 
@@ -62,7 +62,7 @@ a new file following the export conventions:
 - SCREAMING-CASE filename, H1, then the provenance line (exact shape shown above).
 - One concern per file; split mixed sources.
 
-If the `agent-hub-scan` skill is available, its SKILL.md is the authority on these
+If the `agent-hub-generate` skill is available, its SKILL.md is the authority on these
 conventions — consult it when unsure.
 
 ## 4. Keep agents honest

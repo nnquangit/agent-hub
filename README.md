@@ -32,7 +32,7 @@ npx @nnquangit/agent-hub --contextDir=docs/knowledge --agentDir=docs/agents -p 3
 
 ## Features
 
-### Sync agents to AGENTS.md, Claude Code, OpenCode ⭐
+### Sync agents to your AI tools ⭐
 
 The **Sync agents** button at the bottom of column 1 exports your agents to the tool
 you actually code with:
@@ -41,9 +41,15 @@ you actually code with:
 
 | Target | What it writes |
 |---|---|
-| **AGENTS.md** | A role → agent-file map with loading rules, inside an append-only `<!-- agent-hub:mapping -->` block — your existing AGENTS.md content is never touched |
+| **AGENTS.md · Codex** | A role → agent-file map with loading rules, inside an append-only `<!-- agent-hub:mapping -->` block — Codex, Amp and most CLI agents read AGENTS.md natively; your existing content is never touched |
 | **Claude Code** | One subagent per agent in `.claude/agents/` — invoke with `@agent-<name>`; the subagent reads its assigned knowledge files first and lists what it loaded |
 | **OpenCode** | One agent per agent in `.opencode/agent/` (subagent mode), same knowledge-first prompt |
+| **Cursor** | One rule per agent in `.cursor/rules/*.mdc` (`alwaysApply: false`) — Cursor picks the rule when the task matches the role |
+| **Windsurf** | One rule per agent in `.windsurf/rules/` (`trigger: model_decision`) |
+| **GitHub Copilot** | The role map block in `.github/copilot-instructions.md` |
+| **Gemini CLI** | The role map block in `GEMINI.md` |
+
+Agents' `model:` field is passed through to Claude Code / OpenCode files.
 
 Generated files carry an `<!-- agent-hub:generated -->` marker: re-syncing only
 rewrites marked files (and removes marked orphans of deleted agents); files you wrote
@@ -126,13 +132,14 @@ Each agent is a self-describing md file, ready for an AI agent (Claude Code, Cur
 ```markdown
 ---
 name: Coder
-role: Senior coder
+role: coder
+model: claude-sonnet-5
 updated: 2026-07-13
 ---
 
 # Agent: Coder
 
-**Role:** Senior coder
+**Role:** coder
 
 ## Knowledge — load these files before starting
 
@@ -151,8 +158,8 @@ Knowledge links are computed **relative from agentDir to contextDir**, so they a
 ## Claude Code skills
 
 This repo is also a Claude Code plugin marketplace shipping two skills ([skills/](skills)).
-(Syncing agents to AGENTS.md / Claude Code / OpenCode is built into the app — see the
-**Sync agents** feature above.)
+(Syncing agents to AGENTS.md/Codex, Claude Code, OpenCode, Cursor, Windsurf, Copilot,
+Gemini is built into the app — see the **Sync agents** feature above.)
 
 ### Install from GitHub
 
@@ -172,7 +179,7 @@ cp -R agent-hub/skills/* ~/.claude/skills/
 
 Restart the Claude Code session and the skills are available in every project.
 
-### agent-hub-scan
+### agent-hub-generate
 
 Bootstraps the knowledge base: scans a project's scattered docs, rules and notes
 (README, docs/, CLAUDE.md, cursor rules...) and organizes them into `.agents/context`

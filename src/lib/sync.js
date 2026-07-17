@@ -86,7 +86,9 @@ function syncGeneratedDir(dir, render, ext = ".md") {
 
 /* ---------- targets ---------- */
 
-function syncAgentsMd() {
+// Instruction-file targets (AGENTS.md, GEMINI.md, copilot-instructions...) share the
+// same role-map block, merged append-only into the given root-relative file.
+function syncMapFile(relPath) {
   const agents = listAgents().sort((a, b) => a.slug.localeCompare(b.slug));
   if (!agents.length) throw new Error("No agents to sync");
   const doc = `# AI Agent Instructions
@@ -108,7 +110,8 @@ Before starting any task:
 7. If instructions conflict, the most specific role instruction takes precedence.
 `;
   const block = `${MAP_START}\n${doc}${MAP_END}\n`;
-  const target = path.join(ROOT, "AGENTS.md");
+  const target = path.join(ROOT, relPath);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
 
   // append-only: the mapping lives in a marker block, nothing outside it is touched
   let out;
@@ -121,7 +124,7 @@ Before starting any task:
         : `${cur.replace(/\s*$/, "")}\n\n${block}`;
   }
   fs.writeFileSync(target, out, "utf8");
-  return { written: ["AGENTS.md"], skipped: [], removed: [], count: agents.length };
+  return { written: [relPath], skipped: [], removed: [], count: agents.length };
 }
 
 function syncClaudeCode() {
@@ -154,12 +157,46 @@ ${agentPrompt(a, "your file-reading tool")}`;
   return { ...res, count: listAgents().length, out: ".opencode/agent" };
 }
 
+function syncCursor() {
+  const dir = path.join(ROOT, ".cursor", "rules");
+  const res = syncGeneratedDir(
+    dir,
+    (a, fname) => {
+      const desc = `Role ${a.role || a.slug} (${a.name}) — apply when the task matches this role.`;
+      return `---
+description: ${JSON.stringify(desc)}
+alwaysApply: false
+---
+${marker(a.slug)}
+
+${agentPrompt(a, "your file-reading tool")}`;
+    },
+    ".mdc"
+  );
+  return { ...res, count: listAgents().length, out: ".cursor/rules" };
+}
+
+function syncWindsurf() {
+  const dir = path.join(ROOT, ".windsurf", "rules");
+  const res = syncGeneratedDir(dir, (a, fname) => {
+    const desc = `Role ${a.role || a.slug} (${a.name}) — apply when the task matches this role.`;
+    return `---
+trigger: model_decision
+description: ${JSON.stringify(desc)}
+---
+${marker(a.slug)}
+
+${agentPrompt(a, "your file-reading tool")}`;
+  });
+  return { ...res, count: listAgents().length, out: ".windsurf/rules" };
+}
+
 export const SYNC_TARGETS = [
   {
     id: "agents-md",
-    label: "AGENTS.md",
-    desc: "Role → agent file map with loading rules (append-only block)",
-    run: syncAgentsMd,
+    label: "AGENTS.md · Codex",
+    desc: "Role → agent map with loading rules — Codex, Amp & most CLI agents read AGENTS.md natively",
+    run: () => syncMapFile("AGENTS.md"),
   },
   {
     id: "claude-code",
@@ -172,6 +209,30 @@ export const SYNC_TARGETS = [
     label: "OpenCode",
     desc: "Agents in .opencode/agent/ (subagent mode)",
     run: syncOpenCode,
+  },
+  {
+    id: "cursor",
+    label: "Cursor",
+    desc: "Rules in .cursor/rules/*.mdc — one rule per agent, picked by role",
+    run: syncCursor,
+  },
+  {
+    id: "windsurf",
+    label: "Windsurf",
+    desc: "Rules in .windsurf/rules/ — one rule per agent (model decision)",
+    run: syncWindsurf,
+  },
+  {
+    id: "copilot",
+    label: "GitHub Copilot",
+    desc: "Role map block in .github/copilot-instructions.md",
+    run: () => syncMapFile(".github/copilot-instructions.md"),
+  },
+  {
+    id: "gemini",
+    label: "Gemini CLI",
+    desc: "Role map block in GEMINI.md",
+    run: () => syncMapFile("GEMINI.md"),
   },
 ];
 

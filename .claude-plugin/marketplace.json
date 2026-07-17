@@ -7,7 +7,7 @@
     {
       "name": "agent-hub-skills",
       "source": "./",
-      "description": "agent-hub-scan + agent-hub-update: build and sync a .agents/context knowledge base viewable with npx @nnquangit/agent-hub"
+      "description": "agent-hub-generate + agent-hub-update: build and sync a .agents/context knowledge base viewable with npx @nnquangit/agent-hub"
     }
   ],
   "description": "Skills for agent-hub \u2014 export project docs/rules into a browsable knowledge base and keep it in sync"
