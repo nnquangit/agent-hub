@@ -113,7 +113,8 @@ export function scanKnowledge() {
         files: directFiles,
       });
 
-    // level 2: scope/knowledge/*.md
+    // level 2: scope/knowledge/*.md — empty topic dirs are listed too, so
+    // folders created from the UI are visible before they have files
     for (const sub of subEntries.filter((e) => e.isDirectory())) {
       const subAbs = path.join(scopeAbs, sub.name);
       if (skipDir(subAbs)) continue;
@@ -121,17 +122,103 @@ export function scanKnowledge() {
         name: f,
         path: `${scopeDir.name}/${sub.name}/${f}`,
       }));
-      if (files.length)
-        groups.push({
-          folder: sub.name,
-          key: `${scopeDir.name}/${sub.name}`,
-          files,
-        });
+      groups.push({
+        folder: sub.name,
+        key: `${scopeDir.name}/${sub.name}`,
+        files,
+      });
     }
 
-    if (groups.length) scopes.push({ scope: scopeDir.name, groups });
+    scopes.push({ scope: scopeDir.name, groups });
   }
   return scopes;
+}
+
+// path segments for user-created folders/files — block traversal & fs-unsafe chars
+function assertSafeSegment(seg) {
+  if (!seg || seg.includes("..") || /[\\/:*?"<>|\n\r]/.test(seg) || /^\.+$/.test(seg))
+    throw new Error(`Invalid name: "${seg}"`);
+  return seg;
+}
+
+/** Create a Scope or Scope/Topic folder inside the context dir */
+export function createKnowledgeDir(relPath) {
+  const segs = String(relPath || "")
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!segs.length) throw new Error("Missing folder path");
+  if (segs.length > 2) throw new Error("Max depth is Scope/Topic (2 levels)");
+  segs.forEach(assertSafeSegment);
+  const dir = path.join(CONTEXT_DIR, ...segs);
+  if (!path.resolve(dir).startsWith(path.resolve(CONTEXT_DIR) + path.sep))
+    throw new Error("Invalid path");
+  fs.mkdirSync(dir, { recursive: true });
+  return { path: segs.join("/") };
+}
+
+/** Delete a Scope or Scope/Topic folder (recursively) inside the context dir */
+export function deleteKnowledgeDir(relPath) {
+  const segs = String(relPath || "")
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!segs.length) throw new Error("Missing folder path");
+  if (segs.length > 2) throw new Error("Max depth is Scope/Topic (2 levels)");
+  segs.forEach(assertSafeSegment);
+  const dir = path.join(CONTEXT_DIR, ...segs);
+  const resolved = path.resolve(dir);
+  if (!resolved.startsWith(path.resolve(CONTEXT_DIR) + path.sep))
+    throw new Error("Invalid path");
+  // the agents dir may live inside the context dir — never delete it along the way
+  const agentsResolved = path.resolve(AGENTS_DIR);
+  if (agentsResolved === resolved || agentsResolved.startsWith(resolved + path.sep))
+    throw new Error("Cannot delete: this folder contains the agents directory");
+  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory())
+    throw new Error("Folder not found");
+  fs.rmSync(dir, { recursive: true });
+  return { path: segs.join("/") };
+}
+
+/** Delete a knowledge md file (path relative to the context dir) */
+export function deleteKnowledgeFile(relPath) {
+  const segs = String(relPath || "")
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!segs.length) throw new Error("Missing file path");
+  if (segs.length > 3) throw new Error("Invalid path");
+  segs.forEach(assertSafeSegment);
+  if (!segs[segs.length - 1].toLowerCase().endsWith(".md"))
+    throw new Error("Only md files can be deleted");
+  const file = path.join(CONTEXT_DIR, ...segs);
+  if (!path.resolve(file).startsWith(path.resolve(CONTEXT_DIR) + path.sep))
+    throw new Error("Invalid path");
+  if (!fs.existsSync(file)) throw new Error("File not found");
+  fs.unlinkSync(file);
+  return { path: segs.join("/") };
+}
+
+/** Create or overwrite a knowledge md file (path relative to the context dir) */
+export function writeKnowledgeFile(relPath, content) {
+  const segs = String(relPath || "")
+    .split("/")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (!segs.length) throw new Error("Missing file path");
+  if (segs.length > 3)
+    throw new Error("Max depth is Scope/Topic/FILE.md (files deeper are invisible)");
+  segs.forEach(assertSafeSegment);
+  if (!segs[segs.length - 1].toLowerCase().endsWith(".md"))
+    segs[segs.length - 1] += ".md";
+  if (isAgentFileName(segs[segs.length - 1]))
+    throw new Error('"agent.*.md" names are reserved for agents');
+  const file = path.join(CONTEXT_DIR, ...segs);
+  if (!path.resolve(file).startsWith(path.resolve(CONTEXT_DIR) + path.sep))
+    throw new Error("Invalid path");
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, String(content ?? ""), "utf8");
+  return { path: segs.join("/") };
 }
 
 /** Every valid knowledge path (flat) */

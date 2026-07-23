@@ -90,9 +90,24 @@ The form includes a free-text **System prompt** and a preview pane showing exact
 
 ![Agent form](https://raw.githubusercontent.com/nnquangit/agent-hub/main/docs/agent-form.png)
 
-### Read knowledge files right inside the app
+### Manage the knowledge tree right inside the app
 
-Click any file row in column 3 to open a drawer with the md content.
+Create scope/topic folders from column 2 (the folder button, or **+** on any scope):
+
+![New folder](https://raw.githubusercontent.com/nnquangit/agent-hub/main/docs/new-folder.png)
+
+Create md files from column 3 (the file button, or **+** on any topic) — and edit any
+file via the **Edit** button inside the file drawer. Click any file row to read it.
+
+![New file](https://raw.githubusercontent.com/nnquangit/agent-hub/main/docs/new-file.png)
+
+Deleting works the same way: hover any scope, topic or file to reveal its trash
+button (also available inside the file drawer). Every delete asks for confirmation —
+and warns when the file is assigned to agents.
+
+Folders are capped at the two levels agent-hub scans (`Scope/Topic`), file names get
+`.md` appended automatically, `agent.*.md` names are reserved, and a folder that
+contains the agents directory can never be deleted.
 
 ![File view](https://raw.githubusercontent.com/nnquangit/agent-hub/main/docs/file-view.png)
 

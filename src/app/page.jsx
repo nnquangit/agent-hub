@@ -10,8 +10,10 @@ import {
 } from "react";
 import { toast } from "sonner";
 import {
+  FilePlusIcon,
   FileTextIcon,
   FolderIcon,
+  FolderPlusIcon,
   FolderSyncIcon,
   Loader2Icon,
   PencilIcon,
@@ -88,6 +90,15 @@ export default function Home() {
   // md file drawer: null | { name, path }
   const [fileView, setFileView] = useState(null);
   const [fileContent, setFileContent] = useState(null); // null = loading
+  const [editingFile, setEditingFile] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  // new-folder popover (column 2) & new-file drawer (column 3)
+  const [folderOpen, setFolderOpen] = useState(false);
+  const [folderPath, setFolderPath] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newPath, setNewPath] = useState("");
+  const [newContent, setNewContent] = useState("");
 
   // sync popover
   const [syncTargets, setSyncTargets] = useState([]);
@@ -349,8 +360,111 @@ export default function Home() {
 
   /* ---------- file detail drawer ---------- */
 
+  const createFolder = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/knowledge/dir", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: folderPath }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create folder");
+      toast.success(`Created folder ${data.path}/`);
+      setFolderOpen(false);
+      setFolderPath("");
+      loadAll();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const saveKnowledgeFile = async (path, content) => {
+    const res = await fetch("/api/knowledge/file", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path, content }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to save file");
+    return data;
+  };
+
+  const submitNewFile = async (e) => {
+    e.preventDefault();
+    try {
+      const data = await saveKnowledgeFile(newPath, newContent);
+      toast.success(`Created ${data.path}`);
+      setCreateOpen(false);
+      setNewPath("");
+      setNewContent("");
+      loadAll();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const removeFolder = async (key, fileCount, e) => {
+    e?.stopPropagation();
+    if (
+      !confirm(
+        `Delete folder "${key}" and ${fileCount} md file(s) inside? This cannot be undone.`
+      )
+    )
+      return;
+    try {
+      const res = await fetch(
+        `/api/knowledge/dir?path=${encodeURIComponent(key)}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete folder");
+      toast.success(`Deleted folder ${data.path}/`);
+      loadAll();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const removeFile = async (f, e) => {
+    e?.stopPropagation();
+    const refs = agents.filter((a) => a.knowledge.includes(f.path));
+    const warn = refs.length
+      ? ` It is assigned to: ${refs.map((a) => a.name).join(", ")}.`
+      : "";
+    if (!confirm(`Delete "${f.path}"?${warn}`)) return;
+    try {
+      const res = await fetch(
+        `/api/knowledge/file?path=${encodeURIComponent(f.path)}`,
+        { method: "DELETE" }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete file");
+      toast.success(`Deleted ${data.path}`);
+      if (fileView?.path === f.path) {
+        setFileView(null);
+        setEditingFile(false);
+      }
+      loadAll();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const saveEditedFile = async () => {
+    try {
+      const data = await saveKnowledgeFile(fileView.path, draft);
+      setFileContent(draft);
+      setEditingFile(false);
+      toast.success(`Saved ${data.path}`);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
   const openFile = async (f) => {
     setFileView(f);
+    setEditingFile(false);
     setFileContent(null);
     try {
       const res = await fetch(
@@ -593,9 +707,33 @@ export default function Home() {
         {/* ===== Column 2: Topics ===== */}
         <Card className="min-h-0 gap-0 overflow-hidden p-0">
           <div className="border-b px-3 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              2 · Knowledge · Topics
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                2 · Knowledge · Topics
+              </span>
+              <Popover open={folderOpen} onOpenChange={setFolderOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon-xs" title="New folder">
+                    <FolderPlusIcon />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-72 p-3">
+                  <form className="grid gap-2" onSubmit={createFolder}>
+                    <Label htmlFor="new-folder">New folder</Label>
+                    <Input
+                      id="new-folder"
+                      placeholder="Scope or Scope/Topic — e.g. Apps/api"
+                      value={folderPath}
+                      onChange={(e) => setFolderPath(e.target.value)}
+                      autoFocus
+                    />
+                    <Button size="sm" type="submit">
+                      Create folder
+                    </Button>
+                  </form>
+                </PopoverContent>
+              </Popover>
+            </div>
             <div className="relative mt-2">
               <SearchIcon className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -610,8 +748,43 @@ export default function Home() {
             <div className="flex flex-col gap-3 p-3">
               {scopesFiltered.map((s) => (
                 <div key={s.scope}>
-                  <div className="mb-1.5 flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {s.scope}
+                  <div className="group/scope mb-1.5 flex items-center justify-between px-1">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {s.scope}
+                    </span>
+                    <span className="flex items-center">
+                      {!s.groups.some((g) => g.key === "~root") && (
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          title={`Delete scope ${s.scope}/`}
+                          className="text-destructive opacity-0 transition-opacity hover:text-destructive group-hover/scope:opacity-100"
+                          onClick={(e) =>
+                            removeFolder(
+                              s.scope,
+                              s.groups.reduce(
+                                (n, g) => n + g.files.length,
+                                0
+                              ),
+                              e
+                            )
+                          }
+                        >
+                          <Trash2Icon />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        title={`New topic in ${s.scope}/`}
+                        onClick={() => {
+                          setFolderPath(`${s.scope}/`);
+                          setFolderOpen(true);
+                        }}
+                      >
+                        <PlusIcon />
+                      </Button>
+                    </span>
                   </div>
                   <div className="ml-2 flex flex-col gap-1.5 border-l pl-2">
                     {s.groups.map((g) => {
@@ -625,7 +798,7 @@ export default function Home() {
                           onClick={() => scrollToGroup(g.key)}
                           title="Scroll to file group"
                           className={cn(
-                            "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-accent/50",
+                            "group flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors hover:bg-accent/50",
                             n > 0 && "border-primary/40 bg-accent/30"
                           )}
                         >
@@ -633,6 +806,19 @@ export default function Home() {
                           <span className="min-w-0 flex-1 truncate">
                             {g.folder}
                           </span>
+                          {g.key.includes("/") && (
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              title={`Delete folder ${g.key}/`}
+                              className="text-destructive opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                              onClick={(e) =>
+                                removeFolder(g.key, g.files.length, e)
+                              }
+                            >
+                              <Trash2Icon />
+                            </Button>
+                          )}
                           <Badge variant={n > 0 ? "default" : "secondary"}>
                             {cur ? `${n}/${g.files.length}` : g.files.length}
                           </Badge>
@@ -662,9 +848,23 @@ export default function Home() {
         {/* ===== Column 3: Files ===== */}
         <Card className="min-h-0 gap-0 overflow-hidden p-0">
           <div className="border-b px-3 py-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              3 · Knowledge · Files
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                3 · Knowledge · Files
+              </span>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                title="New md file"
+                onClick={() => {
+                  setNewPath("");
+                  setNewContent("");
+                  setCreateOpen(true);
+                }}
+              >
+                <FilePlusIcon />
+              </Button>
+            </div>
             <div className="relative mt-2">
               <SearchIcon className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -696,6 +896,18 @@ export default function Home() {
                           <span className="flex items-center gap-1.5 text-sm font-medium">
                             <FolderIcon className="size-4 text-muted-foreground" />
                             {g.folder}
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              title={`New file in ${g.key}/`}
+                              onClick={() => {
+                                setNewPath(`${g.key}/`);
+                                setNewContent("");
+                                setCreateOpen(true);
+                              }}
+                            >
+                              <FilePlusIcon />
+                            </Button>
                           </span>
                           {cur && (
                             <Button
@@ -718,7 +930,7 @@ export default function Home() {
                               onClick={() => openFile(f)}
                               title="View file content"
                               className={cn(
-                                "flex cursor-pointer items-center gap-2.5 rounded-md border border-transparent px-2 py-1.5 text-sm transition-colors hover:bg-accent/50",
+                                "group flex cursor-pointer items-center gap-2.5 rounded-md border border-transparent px-2 py-1.5 text-sm transition-colors hover:bg-accent/50",
                                 checked.has(f.path) &&
                                   "border-primary/40 bg-primary/10"
                               )}
@@ -730,7 +942,18 @@ export default function Home() {
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <FileTextIcon className="size-3.5 shrink-0 text-muted-foreground" />
-                              <span className="truncate">{f.name}</span>
+                              <span className="min-w-0 flex-1 truncate">
+                                {f.name}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon-xs"
+                                title={`Delete ${f.path}`}
+                                className="text-destructive opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+                                onClick={(e) => removeFile(f, e)}
+                              >
+                                <Trash2Icon />
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -851,11 +1074,14 @@ export default function Home() {
         </SheetContent>
       </Sheet>
 
-      {/* ===== Drawer: md file content ===== */}
+      {/* ===== Drawer: md file content (view / edit) ===== */}
       <Sheet
         open={!!fileView}
         onOpenChange={(o) => {
-          if (!o) setFileView(null);
+          if (!o) {
+            setFileView(null);
+            setEditingFile(false);
+          }
         }}
       >
         <SheetContent side="right" className="data-[side=right]:sm:max-w-xl">
@@ -863,6 +1089,31 @@ export default function Home() {
             <SheetTitle className="flex items-center gap-2">
               <FileTextIcon className="size-4" />
               {fileView?.name}
+              {!editingFile && fileContent !== null && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="ml-2"
+                    onClick={() => {
+                      setDraft(fileContent);
+                      setEditingFile(true);
+                    }}
+                  >
+                    <PencilIcon data-icon="inline-start" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => removeFile(fileView)}
+                  >
+                    <Trash2Icon data-icon="inline-start" />
+                    Delete
+                  </Button>
+                </>
+              )}
             </SheetTitle>
             <SheetDescription>
               <code>
@@ -870,18 +1121,85 @@ export default function Home() {
               </code>
             </SheetDescription>
           </SheetHeader>
-          <ScrollArea className="min-h-0 flex-1 border-t">
-            {fileContent === null ? (
-              <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
-                <Loader2Icon className="size-4 animate-spin" />
-                Loading...
-              </div>
-            ) : (
-              <pre className="whitespace-pre-wrap p-4 font-mono text-xs leading-relaxed">
-                {fileContent}
-              </pre>
-            )}
-          </ScrollArea>
+          {editingFile ? (
+            <>
+              <Textarea
+                className="mx-4 min-h-0 flex-1 resize-none font-mono text-xs leading-relaxed"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                autoFocus
+              />
+              <SheetFooter>
+                <Button onClick={saveEditedFile}>Save file</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingFile(false)}
+                >
+                  Cancel
+                </Button>
+              </SheetFooter>
+            </>
+          ) : (
+            <ScrollArea className="min-h-0 flex-1 border-t">
+              {fileContent === null ? (
+                <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
+                  <Loader2Icon className="size-4 animate-spin" />
+                  Loading...
+                </div>
+              ) : (
+                <pre className="whitespace-pre-wrap p-4 font-mono text-xs leading-relaxed">
+                  {fileContent}
+                </pre>
+              )}
+            </ScrollArea>
+          )}
+        </SheetContent>
+      </Sheet>
+
+      {/* ===== Drawer: new md file ===== */}
+      <Sheet open={createOpen} onOpenChange={setCreateOpen}>
+        <SheetContent side="right" className="data-[side=right]:sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <FilePlusIcon className="size-4" />
+              New knowledge file
+            </SheetTitle>
+            <SheetDescription>
+              Created inside <code>{cfg.contextDir}/</code> — max depth
+              Scope/Topic/FILE.md
+            </SheetDescription>
+          </SheetHeader>
+          <form
+            className="flex min-h-0 flex-1 flex-col gap-3"
+            onSubmit={submitNewFile}
+          >
+            <div className="grid gap-2 px-4">
+              <Label htmlFor="new-file-path">Path</Label>
+              <Input
+                id="new-file-path"
+                placeholder="Scope/Topic/FILE.md — e.g. Apps/api/NOTES.md"
+                value={newPath}
+                onChange={(e) => setNewPath(e.target.value)}
+                autoFocus
+              />
+              <Label htmlFor="new-file-content">Content</Label>
+            </div>
+            <Textarea
+              id="new-file-content"
+              className="mx-4 min-h-0 flex-1 resize-none font-mono text-xs leading-relaxed"
+              placeholder="# Title&#10;&#10;Write your knowledge here..."
+              value={newContent}
+              onChange={(e) => setNewContent(e.target.value)}
+            />
+            <SheetFooter>
+              <Button type="submit">Create file</Button>
+              <SheetClose asChild>
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
+              </SheetClose>
+            </SheetFooter>
+          </form>
         </SheetContent>
       </Sheet>
     </div>
